@@ -15,4 +15,4 @@ This program can be used as wrapper for another jar file:
   - Cancel malicious `ChatEvent` on BungeeCord
   - Cancel malicious `AsyncPlayerChatEvent` on Spigot/Paper
   - Cancel outbound packet that contains malicious string
-- Or alternatively, you can upgrade log4j2 to `2.15.0-SNAPSHOT`.
+- Or alternatively, you can upgrade log4j2 to `2.15.0`.
