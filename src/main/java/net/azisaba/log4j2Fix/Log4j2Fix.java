@@ -10,8 +10,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,9 +26,9 @@ public class Log4j2Fix {
         }
         String main = arguments.remove(0);
         File file = new File(main);
-        ClassLoader classLoader;
         if (file.exists()) {
-            classLoader = new URLClassLoader(new URL[]{file.toURI().toURL()}, Log4j2Fix.class.getClassLoader());
+            System.out.println("Using " + file.getAbsolutePath() + " for classpath");
+            NativeUtil.appendToSystemClassLoaderSearch(file.getAbsolutePath());
             ZipFile zipFile = new ZipFile(file);
             ZipEntry zipEntry = zipFile.getEntry("META-INF/MANIFEST.MF");
             if (zipEntry == null) {
@@ -59,11 +57,9 @@ public class Log4j2Fix {
                     main = arguments.remove(0);
                 }
             }
-        } else {
-            classLoader = Log4j2Fix.class.getClassLoader();
         }
         try {
-            Class<?> clazz = Class.forName(main, false, classLoader);
+            Class<?> clazz = Class.forName(main);
             Method m = clazz.getMethod("main", String[].class);
             m.invoke(null, (Object) arguments.toArray(new String[0]));
         } catch (ReflectiveOperationException e) {
