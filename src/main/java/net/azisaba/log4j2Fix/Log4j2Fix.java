@@ -17,6 +17,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class Log4j2Fix {
+    private static String arg;
+    private static Instrumentation inst;
+
     public static void main(String[] args) throws IOException {
         transformClasses();
         List<String> arguments = new ArrayList<>(Arrays.asList(args));
@@ -25,6 +28,7 @@ public class Log4j2Fix {
             return;
         }
         String main = arguments.remove(0);
+        String premain = null;
         File file = new File(main);
         if (file.exists()) {
             System.out.println("Using " + file.getAbsolutePath() + " for classpath");
@@ -45,7 +49,8 @@ public class Log4j2Fix {
                     if (read.startsWith("Main-Class: ")) {
                         main = read.replace("Main-Class: ", "");
                         found = true;
-                        break;
+                    } else if (read.startsWith("Premain-Class")) {
+                        premain = read.replace("Premain-Class: " , "");
                     }
                 }
                 reader.close();
@@ -56,6 +61,16 @@ public class Log4j2Fix {
                     }
                     main = arguments.remove(0);
                 }
+            }
+        }
+        if (premain != null) {
+            try {
+                Class<?> clazz = Class.forName(premain);
+                Method m = clazz.getMethod("premain", String.class, Instrumentation.class);
+                m.invoke(null, arg, inst);
+            } catch (ReflectiveOperationException e) {
+                System.err.println("Failed to invoke premain method of class " + premain);
+                e.printStackTrace();
             }
         }
         try {
@@ -70,10 +85,14 @@ public class Log4j2Fix {
 
     public static void agentmain(String args, Instrumentation instrumentation) throws IOException {
         transformClasses();
+        arg = args;
+        inst = instrumentation;
     }
 
     public static void premain(String args, Instrumentation instrumentation) throws IOException {
         transformClasses();
+        arg = args;
+        inst = instrumentation;
     }
 
     public static void transformClasses() throws IOException {
