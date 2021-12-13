@@ -96,30 +96,40 @@ public class Log4j2Fix {
     }
 
     public static void transformClasses() throws IOException {
-        transformClass("org.apache.logging.log4j.core.appender.mom.JmsAppender");
-        transformClass("org.apache.logging.log4j.core.appender.mom.JmsAppender$1");
-        transformClass("org.apache.logging.log4j.core.appender.mom.JmsAppender$Builder");
-        transformClass("org.apache.logging.log4j.core.net.JndiManager");
-        transformClass("org.apache.logging.log4j.core.net.JndiManager$1");
-        transformClass("org.apache.logging.log4j.core.net.JndiManager$JndiManagerFactory");
-        transformClass("org.apache.logging.log4j.core.util.NetUtils");
+        transformClass("org.apache.logging.log4j.core.appender.mom.JmsAppender", false);
+        transformClass("org.apache.logging.log4j.core.appender.mom.JmsAppender$1", false);
+        transformClass("org.apache.logging.log4j.core.appender.mom.JmsAppender$Builder", false);
+        transformClass("org.apache.logging.log4j.core.net.JndiManager", false);
+        transformClass("org.apache.logging.log4j.core.net.JndiManager$1", false);
+        transformClass("org.apache.logging.log4j.core.net.JndiManager$JndiManagerFactory", false);
+        transformClass("org.apache.logging.log4j.core.util.NetUtils", false);
+        if (Boolean.getBoolean("log4j2Fix.loadReflectionUtil")) {
+            transformClass("org.apache.logging.log4j.util.ReflectionUtil", true);
+            transformClass("org.apache.logging.log4j.util.ReflectionUtil$PrivateSecurityManager", true);
+        }
     }
 
-    public static void transformClass(String className) throws IOException {
+    public static void transformClass(String className, boolean loadNow) throws IOException {
         Class<?> clazz = Arrays.stream(NativeUtil.getLoadedClasses()).filter(clazz2 -> clazz2.getTypeName().equals(className)).findFirst().orElse(null);
         if (clazz == null) {
             String path = "/classes/" + className.replace('.', '/') + ".class";
             InputStream in = Log4j2Fix.class.getResourceAsStream(path);
             if (in == null) throw new RuntimeException("Could not find '" + path + "' in jar file");
             byte[] newClassBytes = readAllBytes(in);
-            System.out.println(className + " is not loaded, registering class load hook");
-            NativeUtil.registerClassLoadHook((classLoader, s, aClass, protectionDomain, bytes) -> {
-                if (s.equals(className.replace('.', '/'))) {
-                    System.out.println("Transformed " + className);
-                    return newClassBytes;
-                }
-                return null;
-            });
+            if (loadNow) {
+                System.out.println("Loading class " + className + " from " + path);
+                Class<?> actualClass = NativeUtil.defineClass(className.replace('.', '/'), ClassLoader.getSystemClassLoader(), newClassBytes, newClassBytes.length);
+                System.out.println("Loaded class '" + actualClass.toGenericString() + "' from " + path);
+            } else {
+                System.out.println(className + " is not loaded, registering class load hook");
+                NativeUtil.registerClassLoadHook((classLoader, s, aClass, protectionDomain, bytes) -> {
+                    if (s.equals(className.replace('.', '/'))) {
+                        System.out.println("Transformed " + className);
+                        return newClassBytes;
+                    }
+                    return null;
+                });
+            }
         } else {
             System.err.println(className + " is already loaded, cannot process " + className);
         }
