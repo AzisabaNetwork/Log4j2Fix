@@ -7,6 +7,8 @@ This program can be used as wrapper for another jar file:
 
 `java -javaagent:Log4j2Fix-1.0.0.jar ...` or `java -jar Log4j2Fix-1.0.0.jar another-jar-file.jar [main class if MANIFEST.MF does not have Main-Class attribute] [arguments]`
 
+(例) `java -javaagent:Log4j2Fix-1.0.3.jar -jar paper-1.15.2.jar` もしくは `java -jar Log4j2Fix-1.0.3.jar paper-1.15.2.jar`
+
 ## Note
 - This does not protect from ldap server hosted by localhost (127.0.0.1)
 - If installed on server, it does not protect client from being abused.
