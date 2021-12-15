@@ -51,8 +51,8 @@
     </build>
     <repositories>
         <repository>
-            <id>acrylic-repo</id>
-            <url>https://repo2.acrylicstyle.yz/</url>
+            <id>blueberry-repo</id>
+            <url>https://repo.blueberrymc.net/repository/maven-public/</url>
         </repository>
     </repositories>
     <dependencies>
