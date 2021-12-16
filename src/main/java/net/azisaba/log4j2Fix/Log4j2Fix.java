@@ -17,6 +17,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class Log4j2Fix {
+    private static boolean registered = false;
     private static String arg;
     private static Instrumentation inst;
 
@@ -96,13 +97,14 @@ public class Log4j2Fix {
     }
 
     public static void transformClasses() throws IOException {
-        transformClass("org.apache.logging.log4j.core.appender.mom.JmsAppender", false);
-        transformClass("org.apache.logging.log4j.core.appender.mom.JmsAppender$1", false);
-        transformClass("org.apache.logging.log4j.core.appender.mom.JmsAppender$Builder", false);
-        transformClass("org.apache.logging.log4j.core.net.JndiManager", false);
-        transformClass("org.apache.logging.log4j.core.net.JndiManager$1", false);
-        transformClass("org.apache.logging.log4j.core.net.JndiManager$JndiManagerFactory", false);
-        transformClass("org.apache.logging.log4j.core.util.NetUtils", false);
+        if (registered) return;
+        registered = true;
+        NativeUtil.registerClassLoadHook((classLoader, s, aClass, protectionDomain, bytes) -> {
+            if ("org/apache/logging/log4j/core/lookup/JndiLookup".equals(s) || s.startsWith("org/apache/logging/log4j/core/lookup/JndiLookup$")) {
+                sneakyThrow(new ClassNotFoundException());
+            }
+            return null;
+        });
         if (Boolean.getBoolean("log4j2Fix.loadReflectionUtil")) {
             transformClass("org.apache.logging.log4j.util.ReflectionUtil", true);
             transformClass("org.apache.logging.log4j.util.ReflectionUtil$PrivateSecurityManager", true);
@@ -143,5 +145,10 @@ public class Log4j2Fix {
             baos.write(buf, 0, read);
         }
         return baos.toByteArray();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <X extends Throwable> void sneakyThrow(Throwable throwable) throws X {
+        throw (X) throwable;
     }
 }
