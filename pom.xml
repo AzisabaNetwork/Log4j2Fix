@@ -6,7 +6,7 @@
 
     <groupId>net.azisaba</groupId>
     <artifactId>Log4j2Fix</artifactId>
-    <version>1.0.5</version>
+    <version>1.0.6</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -44,6 +44,7 @@
                             <Main-Class>net.azisaba.log4j2Fix.Log4j2Fix</Main-Class>
                             <Premain-Class>net.azisaba.log4j2Fix.Log4j2Fix</Premain-Class>
                             <Agent-Class>net.azisaba.log4j2Fix.Log4j2Fix</Agent-Class>
+                            <Multi-Release>true</Multi-Release>
                         </manifestEntries>
                     </archive>
                 </configuration>
