@@ -22,7 +22,7 @@ public class Log4j2Fix {
     private static Instrumentation inst;
 
     public static void main(String[] args) throws IOException {
-        transformClasses();
+        transformClasses(false);
         List<String> arguments = new ArrayList<>(Arrays.asList(args));
         if (arguments.isEmpty()) {
             System.out.println("wat");
