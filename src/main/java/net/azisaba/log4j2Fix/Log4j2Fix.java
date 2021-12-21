@@ -85,18 +85,18 @@ public class Log4j2Fix {
     }
 
     public static void agentmain(String args, Instrumentation instrumentation) throws IOException {
-        transformClasses();
+        transformClasses("l".equals(args));
         arg = args;
         inst = instrumentation;
     }
 
     public static void premain(String args, Instrumentation instrumentation) throws IOException {
-        transformClasses();
+        transformClasses("l".equals(args));
         arg = args;
         inst = instrumentation;
     }
 
-    public static void transformClasses() throws IOException {
+    public static void transformClasses(boolean b) throws IOException {
         if (registered) return;
         registered = true;
         NativeUtil.registerClassLoadHook((classLoader, s, aClass, protectionDomain, bytes) -> {
@@ -105,7 +105,7 @@ public class Log4j2Fix {
             }
             return null;
         });
-        if (Boolean.getBoolean("log4j2Fix.loadReflectionUtil")) {
+        if (b || Boolean.getBoolean("log4j2Fix.loadReflectionUtil")) {
             transformClass("org.apache.logging.log4j.util.ReflectionUtil", true);
             transformClass("org.apache.logging.log4j.util.ReflectionUtil$PrivateSecurityManager", true);
         }
