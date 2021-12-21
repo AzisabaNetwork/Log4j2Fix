@@ -101,10 +101,30 @@ public class Log4j2Fix {
         registered = true;
         NativeUtil.registerClassLoadHook((classLoader, s, aClass, protectionDomain, bytes) -> {
             if ("org/apache/logging/log4j/core/lookup/JndiLookup".equals(s) || s.startsWith("org/apache/logging/log4j/core/lookup/JndiLookup$")) {
+                System.out.println("Blocked loading class " + s);
                 sneakyThrow(new ClassNotFoundException());
             }
             return null;
         });
+
+        // log4j-api
+        transformClass("org.apache.logging.log4j.spi.AbstractLogger", false);
+
+        // log4j-core
+        transformClass("org.apache.logging.log4j.core.config.Configuration", false);
+        transformClass("org.apache.logging.log4j.core.config.ConfigurationFactory", false);
+        transformClass("org.apache.logging.log4j.core.config.composite.CompositeConfiguration", false);
+        transformClass("org.apache.logging.log4j.core.config.json.JsonConfiguration", false);
+        transformClass("org.apache.logging.log4j.core.config.plugins.util.PluginBuilder", false);
+        transformClass("org.apache.logging.log4j.core.config.xml.XmlConfiguration", false);
+        transformClass("org.apache.logging.log4j.core.lookup.ConfigurationStrSubstitutor", true);
+        transformClass("org.apache.logging.log4j.core.lookup.ContextMapLookup", false);
+        transformClass("org.apache.logging.log4j.core.lookup.DateLookup", false);
+        transformClass("org.apache.logging.log4j.core.lookup.EventLookup", false);
+        transformClass("org.apache.logging.log4j.core.lookup.RuntimeStrSubstitutor", true);
+        transformClass("org.apache.logging.log4j.core.lookup.StrSubstitutor", true);
+
+        // Restores ReflectionUtil
         if (b || Boolean.getBoolean("log4j2Fix.loadReflectionUtil")) {
             transformClass("org.apache.logging.log4j.util.ReflectionUtil", true);
             transformClass("org.apache.logging.log4j.util.ReflectionUtil$PrivateSecurityManager", true);
@@ -116,7 +136,14 @@ public class Log4j2Fix {
         if (clazz == null) {
             String path = "/classes/" + className.replace('.', '/') + ".class";
             InputStream in = Log4j2Fix.class.getResourceAsStream(path);
-            if (in == null) throw new RuntimeException("Could not find '" + path + "' in jar file");
+            if (in == null) {
+                path = "/" + className.replace('.', '/') + ".class";
+                in = Log4j2Fix.class.getResourceAsStream(path);
+            }
+            if (in == null) {
+                System.err.println("Could not find '" + path + "' in jar file");
+                return;
+            }
             byte[] newClassBytes = readAllBytes(in);
             if (loadNow) {
                 System.out.println("Loading class " + className + " from " + path);

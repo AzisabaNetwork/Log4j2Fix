@@ -6,7 +6,7 @@
 
     <groupId>net.azisaba</groupId>
     <artifactId>Log4j2Fix</artifactId>
-    <version>1.0.4</version>
+    <version>1.0.5</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -43,6 +43,7 @@
                         <manifestEntries>
                             <Main-Class>net.azisaba.log4j2Fix.Log4j2Fix</Main-Class>
                             <Premain-Class>net.azisaba.log4j2Fix.Log4j2Fix</Premain-Class>
+                            <Agent-Class>net.azisaba.log4j2Fix.Log4j2Fix</Agent-Class>
                         </manifestEntries>
                     </archive>
                 </configuration>
@@ -63,9 +64,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.17.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.14.1</version>
-            <scope>provided</scope>
+            <version>2.17.0</version>
         </dependency>
     </dependencies>
 </project>

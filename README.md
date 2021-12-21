@@ -17,4 +17,4 @@ This program can be used as wrapper for another jar file:
   - (Cancel malicious `ChatEvent` on BungeeCord)
   - Using [SpigotLog4j2Fix](https://github.com/AzisabaNetwork/SpigotLog4j2Fix) on Spigot/Paper
   - Cancel outbound packet that contains malicious string
-- Or alternatively, you can upgrade log4j2 to `2.15.0`.
+- Or alternatively, you can upgrade log4j2 to `2.17.0`.
